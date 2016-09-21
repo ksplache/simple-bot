@@ -1,6 +1,7 @@
 /* global console, process */
-
 'use strict';
+var dotenv = require('dotenv');
+dotenv.load({ silent: true });
 
 var restify = require('restify');
 var builder = require('botbuilder');
@@ -13,6 +14,34 @@ var uuid = require('uuid4');
 
 // Setup Restify Server
 var server = restify.createServer();
+
+// Ensure we don't drop data on uploads
+server.pre(restify.pre.pause());
+
+// Clean up sloppy paths like //todo//////1//
+server.pre(restify.pre.sanitizePath());
+
+// Handles annoying user agents (curl)
+server.pre(restify.pre.userAgentConnection());
+
+// Set a per request bunyan logger (with requestid filled in)
+server.use(restify.requestLogger());
+
+// Allow 5 requests/second by IP, and burst to 10
+server.use(restify.throttle({
+    burst: 10,
+    rate: 5,
+    ip: true
+}));
+
+// Use the common stuff you probably want
+server.use(restify.acceptParser(server.acceptable));
+server.use(restify.dateParser());
+server.use(restify.authorizationParser());
+server.use(restify.queryParser());
+server.use(restify.gzipResponse());
+server.use(restify.bodyParser());
+
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
@@ -106,6 +135,12 @@ server.get('/api/direct/doeverything', function(req, res) {
 });
 
 var g_conversationId;
+server.get('/api/direct/ping', function(req, res) {
+    res.json({
+        status: 'ping ok',
+        query: req.query
+    });
+});
 
 server.get('/api/direct/connect', function(req, res) {
     startConversation()
@@ -125,41 +160,35 @@ server.get('/api/direct/connect', function(req, res) {
 });
 
 server.get('/api/direct/send', function(req, res) {
-    res.json({
-        status: 'send message to id',
-        id: g_conversationId
-    });
-    return;
-    // var msg = 'Message from SEND API'; // req.params.msg;
-    // sendMessage(undefined, msg)
-    //     .then(function(data) {
-    //         if (data.error) {
-    //             res.json({
-    //                 status: 'send message failed',
-    //                 error: data.error
-    //             })
-    //         } else {
-    //             res.json({
-    //                 status: 'send message ok',
-    //                 id: g_conversationId
-    //             })
-    //         }
-    //
-    //     })
-    //     .catch(function(err) {
-    //         res.json({
-    //             status: 'send message error',
-    //             error: err
-    //         });
-    //     })
+    var response = {
+        message: req.query.msg,
+        id: req.query.id
+    };
+    sendMessage(req.query.id, req.query.msg)
+        .then(function(data) {
+            if (data.error) {
+                response.status = 'send message failed';
+                response.error = data.error;
+                res.json(response);
+            } else {
+                response.status = 'send message ok';
+                res.json(response);
+            }
+    
+        })
+        .catch(function(err) {
+            response.status = 'send message error';
+            response.error = err;
+            res.json(response);
+        });
 });
 
 server.get('/api/direct/get', function(req, res) {
-    getMessage(undefined)
+    getMessage(req.query.id)
         .then(function(data) {
             res.json({
                 status: 'get message ok',
-                id: g_conversationId,
+                id: req.query.id,
                 messages: data.messages
             });
 
@@ -167,6 +196,7 @@ server.get('/api/direct/get', function(req, res) {
         .catch(function(err) {
             res.json({
                 status: 'get message error',
+                id: req.query.id,
                 error: err
             });
         });
