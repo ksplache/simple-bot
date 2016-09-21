@@ -122,6 +122,11 @@ server.get('/api/direct/connect', function(req, res) {
 
 server.get('/api/direct/send', function(req, res) {
     var msg = 'Message from SEND API'; // req.params.msg;
+    res.json({
+        status: 'send message to id',
+        id: g_conversationId
+    });
+    return;
     sendMessage(undefined, msg)
         .then(function(data) {
             if (data.error) {
