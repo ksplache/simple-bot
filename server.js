@@ -51,7 +51,7 @@ server.get('/api/direct/connect', function(req, res) {
 });
 
 server.get('/api/direct/send', function(req, res) {
-    var msg = req.params.msg;
+    var msg = 'Message from SEND API'; // req.params.msg;
     sendMessage(msg)
         .then(function(data) {
             if (data.error) {
