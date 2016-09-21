@@ -1,3 +1,7 @@
+/* global console, process */
+
+'use strict';
+
 var restify = require('restify');
 var builder = require('botbuilder');
 var request = require('request-promise');
@@ -29,14 +33,14 @@ server.post('/api/messages', connector.listen());
 
 bot.dialog('/', function (session) {
     // console.log('app message');
-    session.send("Hello World from Ken to ", session.userData.name);
+    session.send("Hello World from Ken echo: ", session.message.text);
 });
 
 function checkMessages(convId, expected, res) {
     var count = 0;
     var actual = 0;
     var response;
-    while (actual != expected) {
+    while (actual !== expected) {
         count++;
         if (count > 10) {
             actual = expected;
@@ -91,14 +95,14 @@ server.get('/api/direct/doeverything', function(req, res) {
                         status: 'send message failed',
                         error: err
                     });
-                })
+                });
         })
         .catch(function(err) {
             res.json({
                 status: 'connect failed',
                 error: err
             });
-        })
+        });
 });
 
 var g_conversationId;
@@ -110,55 +114,54 @@ server.get('/api/direct/connect', function(req, res) {
             res.json({
                 status: 'connect ok',
                 id: g_conversationId
-            })
+            });
         })
         .catch(function(err) {
             res.json({
                 status: 'connect failed',
                 error: err
             });
-        })
+        });
 });
 
 server.get('/api/direct/send', function(req, res) {
-    var msg = 'Message from SEND API'; // req.params.msg;
     res.json({
         status: 'send message to id',
         id: g_conversationId
     });
     return;
-    sendMessage(undefined, msg)
-        .then(function(data) {
-            if (data.error) {
-                res.json({
-                    status: 'send message failed',
-                    error: data.error
-                })
-            } else {
-                res.json({
-                    status: 'send message ok',
-                    id: g_conversationId
-                })
-            }
-
-        })
-        .catch(function(err) {
-            res.json({
-                status: 'send message error',
-                error: err
-            });
-        })
+    // var msg = 'Message from SEND API'; // req.params.msg;
+    // sendMessage(undefined, msg)
+    //     .then(function(data) {
+    //         if (data.error) {
+    //             res.json({
+    //                 status: 'send message failed',
+    //                 error: data.error
+    //             })
+    //         } else {
+    //             res.json({
+    //                 status: 'send message ok',
+    //                 id: g_conversationId
+    //             })
+    //         }
+    //
+    //     })
+    //     .catch(function(err) {
+    //         res.json({
+    //             status: 'send message error',
+    //             error: err
+    //         });
+    //     })
 });
 
 server.get('/api/direct/get', function(req, res) {
     getMessage(undefined)
         .then(function(data) {
-
             res.json({
                 status: 'get message ok',
                 id: g_conversationId,
                 messages: data.messages
-            })
+            });
 
         })
         .catch(function(err) {
@@ -166,7 +169,7 @@ server.get('/api/direct/get', function(req, res) {
                 status: 'get message error',
                 error: err
             });
-        })
+        });
 });
 
 var clientSecret = process.env.BOT_DIRECT_CHANNEL_SECRET;
