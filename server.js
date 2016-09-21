@@ -235,6 +235,7 @@ function sendMessage(convId, msg) {
      */
     var options = {
         method: 'POST',
+        resolveWithFullResponse: true,
         json: true,
         uri: 'https://directline.botframework.com/api/conversations/' + convId + '/messages',
         headers: {
