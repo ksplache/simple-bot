@@ -9,8 +9,8 @@ var uuid = require('uuid4');
 
 var clientSecret = process.env.BOT_DIRECT_CHANNEL_SECRET;
 var conversationId;
-
-
+var baseUrl = 'https://directline.botframework.com';
+//var baseUrl = 'http://96642ca4.ngrok.io';
 
 function startConversation() {
     /*
@@ -22,7 +22,7 @@ function startConversation() {
     var options = {
         method: 'POST',
         json: true,
-        uri: 'https://directline.botframework.com/api/conversations',
+        uri: baseUrl + '/api/conversations',
         headers: {
             // POST /api/tokens/conversation
             Authorization: 'BotConnector ' + clientSecret
@@ -39,8 +39,9 @@ function sendMessage(msg) {
      */
     var options = {
         method: 'POST',
+        resolveWithFullResponse: true,
         json: true,
-        uri: 'https://directline.botframework.com/api/conversations/' + conversationId + '/messages',
+        uri: baseUrl + '/api/conversations/' + conversationId + '/messages',
         headers: {
             // POST /api/tokens/conversation
             Authorization: 'BotConnector ' + clientSecret
@@ -69,7 +70,7 @@ function getMessage() {
     var options = {
         method: 'GET',
         json: true,
-        uri: 'https://directline.botframework.com/api/conversations/' + conversationId + '/messages',
+        uri: baseUrl + '/api/conversations/' + conversationId + '/messages',
         headers: {
             // POST /api/tokens/conversation
             Authorization: 'BotConnector ' + clientSecret
@@ -91,7 +92,7 @@ startConversation()
          "eTag": "string"
          }
          */
-        return sendMessage('Hello from direct line');
+        return sendMessage('Simon says');
     })
     .then(function(result) {
         console.log('Send message: ', JSON.stringify(result));
