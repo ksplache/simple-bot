@@ -32,25 +32,59 @@ bot.dialog('/', function (session) {
     session.send("Hello World from Ken to ", session.userData.name);
 });
 
+function checkMessages(convId, expected, res) {
+    var count = 0;
+    var actual = 0;
+    var response;
+    while (actual != expected) {
+        count++;
+        if (count > 10) {
+            actual = expected;
+            response = {
+                status: 'get messages retries exceeded'
+            };
+        } else {
+            getMessage(convId)
+                .then(function (result) {
+                    actual = result.messages;
+                    response = {
+                        status: 'ok',
+                        messages: result.messages,
+                        id: convId
+                    };
+                })
+                .catch(function (err) {
+                    response = {
+                        status: 'get messages failed',
+                        error: err
+                    };
+                    actual = expected; // break
+                });
+        }
+    }
+
+    res.json(response);
+}
 server.get('/api/direct/doeverything', function(req, res) {
     startConversation()
         .then(function(data) {
             sendMessage(data.conversationId, 'Hard coded from HTTP API')
                 .then(function() {
-                    getMessage(data.conversationId)
-                        .then(function(result) {
-                            res.json({
-                                status: 'ok',
-                                messages: result.messages,
-                                id: data.conversationId
-                            })
-                        })
-                        .catch(function(err) {
-                            res.json({
-                                status: 'get messages failed',
-                                error: err
-                            });
-                        })
+                    checkMessages(data.conversationId, 2, res);
+                    // getMessage(data.conversationId)
+                    //     .then(function(result) {
+                    //         res.json({
+                    //             status: 'ok',
+                    //             messages: result.messages,
+                    //             id: data.conversationId
+                    //         })
+                    //     })
+                    //     .catch(function(err) {
+                    //         res.json({
+                    //             status: 'get messages failed',
+                    //             error: err
+                    //         });
+                    //     })
                 })
                 .catch(function(err) {
                     res.json({
