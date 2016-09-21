@@ -32,6 +32,41 @@ bot.dialog('/', function (session) {
     session.send("Hello World from Ken to ", session.userData.name);
 });
 
+server.get('/api/direct/doeverything', function(req, res) {
+    startConversation()
+        .then(function(data) {
+            //conversationId = data.conversationId;
+            sendMessage(data.conversationId, 'Hard coded from HTTP API')
+                .then(function() {
+                    getMessage(data.conversationId)
+                        .then(function(result) {
+                            res.json({
+                                status: 'ok',
+                                messages: result.messages,
+                                id: data.conversationId
+                            })
+                        })
+                        .catch(function(err) {
+                            res.json({
+                                status: 'get messages failed',
+                                error: err
+                            });
+                        })
+                })
+                .catch(function(err) {
+                    res.json({
+                        status: 'send message failed',
+                        error: err
+                    });
+                })
+        })
+        .catch(function(err) {
+            res.json({
+                status: 'connect failed',
+                error: err
+            });
+        })
+});
 
 server.get('/api/direct/connect', function(req, res) {
     startConversation()
