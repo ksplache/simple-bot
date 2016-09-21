@@ -35,7 +35,6 @@ bot.dialog('/', function (session) {
 server.get('/api/direct/doeverything', function(req, res) {
     startConversation()
         .then(function(data) {
-            //conversationId = data.conversationId;
             sendMessage(data.conversationId, 'Hard coded from HTTP API')
                 .then(function() {
                     getMessage(data.conversationId)
@@ -68,13 +67,15 @@ server.get('/api/direct/doeverything', function(req, res) {
         })
 });
 
+var g_conversationId;
+
 server.get('/api/direct/connect', function(req, res) {
     startConversation()
         .then(function(data) {
-            conversationId = data.conversationId;
+            g_conversationId = data.conversationId;
             res.json({
                 status: 'connect ok',
-                id: conversationId
+                id: g_conversationId
             })
         })
         .catch(function(err) {
@@ -87,7 +88,7 @@ server.get('/api/direct/connect', function(req, res) {
 
 server.get('/api/direct/send', function(req, res) {
     var msg = 'Message from SEND API'; // req.params.msg;
-    sendMessage(msg)
+    sendMessage(undefined, msg)
         .then(function(data) {
             if (data.error) {
                 res.json({
@@ -97,7 +98,7 @@ server.get('/api/direct/send', function(req, res) {
             } else {
                 res.json({
                     status: 'send message ok',
-                    id: conversationId
+                    id: g_conversationId
                 })
             }
 
@@ -111,12 +112,12 @@ server.get('/api/direct/send', function(req, res) {
 });
 
 server.get('/api/direct/get', function(req, res) {
-    getMessage()
+    getMessage(undefined)
         .then(function(data) {
 
             res.json({
                 status: 'get message ok',
-                id: conversationId,
+                id: g_conversationId,
                 messages: data.messages
             })
 
@@ -130,7 +131,6 @@ server.get('/api/direct/get', function(req, res) {
 });
 
 var clientSecret = process.env.BOT_DIRECT_CHANNEL_SECRET;
-var conversationId;
 
 
 function startConversation() {
@@ -153,7 +153,10 @@ function startConversation() {
     return request(options);
 }
 
-function sendMessage(msg) {
+function sendMessage(convId, msg) {
+    if (!convId) {
+        convId = g_conversationId;
+    }
     /*
      The client may send messages to the bot by calling POST on
      https://directline.botframework.com/api/conversations/{conversationId}/messages.
@@ -161,14 +164,14 @@ function sendMessage(msg) {
     var options = {
         method: 'POST',
         json: true,
-        uri: 'https://directline.botframework.com/api/conversations/' + conversationId + '/messages',
+        uri: 'https://directline.botframework.com/api/conversations/' + convId + '/messages',
         headers: {
             // POST /api/tokens/conversation
             Authorization: 'BotConnector ' + clientSecret
         },
         body: {
             "id": uuid(),
-            "conversationId": conversationId,
+            "conversationId": convId,
             "created": new Date().toISOString(),
             "from": "Direct Line from Stanton App",
             "text": msg,
@@ -179,7 +182,10 @@ function sendMessage(msg) {
     return request(options);
 }
 
-function getMessage() {
+function getMessage(convId) {
+    if (!convId) {
+        convId = g_conversationId;
+    }
     /*
      The client may retrieve messages sent by the bot by calling GET on
      https://directline.botframework.com/api/conversations/{conversationId}/messages.
@@ -190,7 +196,7 @@ function getMessage() {
     var options = {
         method: 'GET',
         json: true,
-        uri: 'https://directline.botframework.com/api/conversations/' + conversationId + '/messages',
+        uri: 'https://directline.botframework.com/api/conversations/' + convId + '/messages',
         headers: {
             // POST /api/tokens/conversation
             Authorization: 'BotConnector ' + clientSecret
