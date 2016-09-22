@@ -68,11 +68,12 @@ bot.dialog('/', function (session) {
         // Echo back any custom data from the channel
         msg = new builder.Message(session)
             .text(text)
-            .sourceEvent(session.message.sourceEvent);
+            .sourceEvent({directLine: { custom: session.message.sourceEvent }});
     } else {
         msg = new builder.Message(session)
             .text(text)
-            .sourceEvent({custom: 'from server'});
+            .channelData()
+            .sourceEvent({directLine: { custom: 'from server'}});
     }
     session.send(msg);
 });
