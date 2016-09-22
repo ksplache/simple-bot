@@ -62,7 +62,15 @@ server.post('/api/messages', connector.listen());
 
 bot.dialog('/', function (session) {
     // console.log('app message');
-    session.send("Hello World from Ken echo: " + JSON.stringify(session.message)); //.text);
+    var msg;
+    if (session.message.sourceEvent) {
+        // Echo back any custom data from the channel
+        msg = new builder.Message(session).sourceEvent(session.message.sourceEvent);
+    }
+    session.send("Hello World from Ken echo: " + session.message.text);
+    if (msg) {
+        session.endDialog(msg);
+    }
 });
 
 function checkMessages(convId, expected, res) {
@@ -248,7 +256,10 @@ function sendMessage(convId, msg) {
             "created": new Date().toISOString(),
             "from": "Direct Line from Stanton App",
             "text": msg,
-            "channelData": {}
+            "channelData": {
+                teamId: 'Stanton specific team',
+                threadId: 'Stanton Specific chat thread'
+            }
         }
     };
 
