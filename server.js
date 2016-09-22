@@ -63,7 +63,7 @@ server.post('/api/messages', connector.listen());
 bot.dialog('/', function (session) {
     // console.log('app message');
     var msg, text;
-    text = "Hello World from Ken echo: " + session.message.text;
+    text = "You said: " + session.message.text;
     if (session.message.sourceEvent) {
         // Echo back any custom data from the channel
         msg = new builder.Message(session)
