@@ -66,8 +66,10 @@ bot.dialog('/', function (session) {
     if (session.message.sourceEvent) {
         // Echo back any custom data from the channel
         msg = new builder.Message(session).sourceEvent(session.message.sourceEvent);
+    } else {
+        msg = new builder.Message(session).sourceEvent({custom: 'from server'});
     }
-    session.send("Hello World from Ken echo: " + session.message.text);
+    session.send("Hello World from Ken echo: " + JSON.stringify(session.message)); // .text);
     if (msg) {
         session.endDialog(msg);
     }
