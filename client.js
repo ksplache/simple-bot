@@ -52,7 +52,9 @@ function sendMessage(msg) {
             "created": new Date().toISOString(),
             "from": "Direct Line from Stanton App",
             "text": msg,
-            "channelData": {}
+            "channelData": {
+                something: 'specific to my app'
+            }
         }
     };
 

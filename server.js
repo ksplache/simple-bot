@@ -62,7 +62,7 @@ server.post('/api/messages', connector.listen());
 
 bot.dialog('/', function (session) {
     // console.log('app message');
-    session.send("Hello World from Ken echo: " + session.message.text);
+    session.send("Hello World from Ken echo: " + JSON.stringify(session.message)); //.text);
 });
 
 function checkMessages(convId, expected, res) {
