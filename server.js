@@ -62,17 +62,19 @@ server.post('/api/messages', connector.listen());
 
 bot.dialog('/', function (session) {
     // console.log('app message');
-    var msg;
+    var msg, text;
+    text = "Hello World from Ken echo: " + JSON.stringify(session.message)); // .text);
     if (session.message.sourceEvent) {
         // Echo back any custom data from the channel
-        msg = new builder.Message(session).sourceEvent(session.message.sourceEvent);
+        msg = new builder.Message(session)
+            .text(text)
+            .sourceEvent(session.message.sourceEvent);
     } else {
-        msg = new builder.Message(session).sourceEvent({custom: 'from server'});
+        msg = new builder.Message(session)
+            .text(text)
+            .sourceEvent({custom: 'from server'});
     }
-    session.send("Hello World from Ken echo: " + JSON.stringify(session.message)); // .text);
-    if (msg) {
-        session.endDialog(msg);
-    }
+    session.send(msg);
 });
 
 function checkMessages(convId, expected, res) {
